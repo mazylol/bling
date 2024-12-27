@@ -18,9 +18,9 @@ struct lsb parse_lsb(char **fileLines, int num_lines) {
     for (int i = 0; i < num_lines; i++) {
         const char *line = fileLines[i];
         if (strstr(line, "DISTRIB_ID=") != NULL) {
-            lsb.distrib_id = strdup(strstr(line, "=") + 1);
+            lsb.distrib_id = strstr(line, "=") + 1;
         } else if (strstr(line, "DISTRIB_RELEASE=") != NULL) {
-            lsb.distrib_release = strdup(strstr(line, "=") + 1);
+            lsb.distrib_release = strstr(line, "=") + 1;
         }
     }
 
@@ -51,7 +51,7 @@ struct mem parse_meminfo(char **fileLines, int num_lines) {
 
         if (strstr(line, "MemTotal:") != NULL) {
             // remove the "kB" from the string
-            char *total_memory = strdup(strstr(line, ":") + 1);
+            char *total_memory = strstr(line, ":") + 1;
             total_memory[strlen(total_memory) - 2] = '\0';
 
             // convert to GB
@@ -59,7 +59,7 @@ struct mem parse_meminfo(char **fileLines, int num_lines) {
             mem.max_memory = total_memory_gb;
         } else if (strstr(line, "MemAvailable:") != NULL) {
             // remove the "kB" from the string
-            char *available_memory = strdup(strstr(line, ":") + 1);
+            char *available_memory = strstr(line, ":") + 1;
             available_memory[strlen(available_memory) - 2] = '\0';
 
             // convert to GB
