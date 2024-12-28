@@ -19,7 +19,6 @@ struct os parse_os(char **fileLines, int num_lines) {
 
     for (int i = 0; i < num_lines; i++) {
         const char *line = fileLines[i];
-        printf("%s\n", line);
 
         if (strstr(line, "NAME=") != NULL) {
             os.name = strstr(line, "=") + 1;
