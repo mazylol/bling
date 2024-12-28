@@ -5,26 +5,32 @@
 
 #include "file.h"
 
-struct lsb {
-    char *distrib_id;
-    char *distrib_release;
+struct os {
+    char *name;
+    char *version;
+    char *build_id;
 };
 
-struct lsb parse_lsb(char **fileLines, int num_lines) {
-    struct lsb lsb;
-    lsb.distrib_id = NULL;
-    lsb.distrib_release = NULL;
+struct os parse_os(char **fileLines, int num_lines) {
+    struct os os;
+    os.name = NULL;
+    os.version = NULL;
+    os.build_id = NULL;
 
     for (int i = 0; i < num_lines; i++) {
         const char *line = fileLines[i];
-        if (strstr(line, "DISTRIB_ID=") != NULL) {
-            lsb.distrib_id = strstr(line, "=") + 1;
-        } else if (strstr(line, "DISTRIB_RELEASE=") != NULL) {
-            lsb.distrib_release = strstr(line, "=") + 1;
+        printf("%s\n", line);
+
+        if (strstr(line, "NAME=") != NULL) {
+            os.name = strstr(line, "=") + 1;
+        } else if (strstr(line, "VERSION_ID=") != NULL) {
+            os.version = strstr(line, "=") + 1;
+        } else if (strstr(line, "BUILD_ID=") != NULL) {
+            os.build_id = strstr(line, "=") + 1;
         }
     }
 
-    return lsb;
+    return os;
 }
 
 struct mem {
@@ -86,7 +92,8 @@ int main() {
     int num_lines = 0;
     const char *hostname = lines("/etc/hostname", &num_lines)[0];
 
-    struct lsb lsb = parse_lsb(lines("/etc/lsb-release", &num_lines), num_lines);
+    char **fileLines = lines("/etc/os-release", &num_lines);
+    struct os os = parse_os(fileLines, num_lines);
 
     char *proc_version = lines("/proc/version", &num_lines)[0];
 
@@ -98,7 +105,7 @@ int main() {
     shell = strtok(NULL, "/");
     shell = strtok(NULL, "/");
 
-    char **fileLines = lines("/proc/meminfo", &num_lines);
+    fileLines = lines("/proc/meminfo", &num_lines);
     struct mem mem = parse_meminfo(fileLines, num_lines);
 
     unsigned long total_memory_gb = 0;
@@ -110,11 +117,16 @@ int main() {
     }
 
     printf("\033[1muser/host\033[0m %s@%s\n", username, hostname);
-    if (lsb.distrib_release != NULL) {
-        printf("\033[1mdistro\033[0m    %s %s\n", lsb.distrib_id, lsb.distrib_release);
-    } else {
-        printf("\033[1mdistro\033[0m    %s\n", lsb.distrib_id);
+
+    printf("\033[1mos\033[0m        %s", os.name);
+    if (os.version != NULL) {
+        printf(" %s", os.version);
     }
+    if (os.build_id != NULL) {
+        printf(" (%s)", os.build_id);
+    }
+    printf("\n");
+
     printf("\033[1mkernel\033[0m    %s\n", kernel);
     printf("\033[1mshell\033[0m     %s\n", shell);
     printf("\033[1mram\033[0m       %.1f / %.1f GiB\n", mem.used_memory, mem.max_memory);
