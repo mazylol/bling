@@ -18,14 +18,14 @@ struct os parse_os(char **fileLines, int num_lines) {
     os.build_id = NULL;
 
     for (int i = 0; i < num_lines; i++) {
-        const char *line = fileLines[i];
+        char *line = fileLines[i];
 
-        if (strstr(line, "NAME=") != NULL) {
-            os.name = strstr(line, "=") + 1;
-        } else if (strstr(line, "VERSION_ID=") != NULL) {
-            os.version = strstr(line, "=") + 1;
-        } else if (strstr(line, "BUILD_ID=") != NULL) {
-            os.build_id = strstr(line, "=") + 1;
+        if (strncmp(line, "NAME=", 5) == 0) {
+            os.name = line + 5;
+        } else if (strncmp(line, "VERSION_ID=", 11) == 0) {
+            os.version = line + 11;
+        } else if (strncmp(line, "BUILD_ID=", 9) == 0) {
+            os.build_id = line + 9;
         }
     }
 
@@ -54,20 +54,16 @@ struct mem parse_meminfo(char **fileLines, int num_lines) {
         char *line = fileLines[i];
         removeSpaces(line);
 
-        if (strstr(line, "MemTotal:") != NULL) {
-            // remove the "kB" from the string
+        if (strncmp(line, "MemTotal:", 9) == 0) {
             char *total_memory = strstr(line, ":") + 1;
             total_memory[strlen(total_memory) - 2] = '\0';
 
-            // convert to GB
             double total_memory_gb = strtod(total_memory, NULL) / 1024 / 1024;
             mem.max_memory = total_memory_gb;
-        } else if (strstr(line, "MemAvailable:") != NULL) {
-            // remove the "kB" from the string
+        } else if (strncmp(line, "MemAvailable:", 13) == 0) {
             char *available_memory = strstr(line, ":") + 1;
             available_memory[strlen(available_memory) - 2] = '\0';
 
-            // convert to GB
             double available_memory_gb = strtod(available_memory, NULL) / 1024 / 1024;
             mem.used_memory = mem.max_memory - available_memory_gb;
         }
