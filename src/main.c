@@ -96,9 +96,7 @@ int main() {
     kernel = strtok(NULL, " ");
     kernel = strtok(NULL, " ");
 
-    char *shell = strtok(getenv("SHELL"), "/");
-    shell = strtok(NULL, "/");
-    shell = strtok(NULL, "/");
+    char *shell = strrchr(getenv("SHELL"), '/') + 1;
 
     fileLines = lines("/proc/meminfo", &num_lines);
     struct mem mem = parse_meminfo(fileLines, num_lines);
