@@ -5,6 +5,28 @@
 
 #include "file.h"
 
+char **split(char *str, char *delim) {
+    char **result = NULL;
+    size_t count = 0;
+    char *token = strtok(str, delim);
+
+    while (token) {
+        char **temp = realloc(result, (count + 1) * sizeof(char *));
+        if (temp == NULL) {
+            perror("Memory allocation error");
+            break;
+        }
+        result = temp;
+
+        result[count] = token;
+        count++;
+
+        token = strtok(NULL, delim);
+    }
+
+    return result;
+}
+
 struct os {
     char *name;
     char *version;
@@ -92,9 +114,7 @@ int main() {
 
     char *proc_version = lines("/proc/version", &num_lines)[0];
 
-    char *kernel = strtok(proc_version, " ");
-    kernel = strtok(NULL, " ");
-    kernel = strtok(NULL, " ");
+    char *kernel = split(proc_version, " ")[2];
 
     char *shell = strrchr(getenv("SHELL"), '/') + 1;
 
