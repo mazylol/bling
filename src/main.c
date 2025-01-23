@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/statvfs.h>
 
+#include "colors.h"
 #include "file.h"
 
 char **split(char *str, char *delim) {
@@ -129,9 +130,9 @@ int main() {
         used_memory_gb = (disk_info.f_blocks - disk_info.f_bfree) * disk_info.f_frsize / 1024 / 1024 / 1024;
     }
 
-    printf("\033[1muser/host\033[0m %s@%s\n", username, hostname);
+    printf("%suser/host%s %s@%s\n", BHGRN, CRESET, username, hostname);
 
-    printf("\033[1mos\033[0m        %s", os.name);
+    printf("%sos%s        %s", BHCYN, CRESET, os.name);
     if (os.version != NULL) {
         printf(" %s", os.version);
     }
@@ -140,11 +141,12 @@ int main() {
     }
     printf("\n");
 
-    printf("\033[1mkernel\033[0m    %s\n", kernel);
-    printf("\033[1mshell\033[0m     %s\n", shell);
-    printf("\033[1mram\033[0m       %.1f / %.1f GiB\n", mem.used_memory, mem.max_memory);
-    printf("\033[1muptime\033[0m    %lu minutes\n", parse_uptime(lines("/proc/uptime", &num_lines)[0]));
-    printf("\033[1mdisk\033[0m      %.1lu / %.1lu GiB\n", used_memory_gb, total_memory_gb);
+
+    printf("%skernel%s    %s\n", BHYEL, CRESET, kernel);
+    printf("%sshell%s     %s\n", BHMAG, CRESET, shell);
+    printf("%sram%s       %.1f / %.1f GiB\n", BHBLU, CRESET, mem.used_memory, mem.max_memory);
+    printf("%suptime%s    %lu minutes\n", BHBLK, CRESET, parse_uptime(lines("/proc/uptime", &num_lines)[0]));
+    printf("%sdisk%s      %.1lu / %.1lu GiB\n", BHRED, CRESET, used_memory_gb, total_memory_gb);
 
     return 0;
 }
