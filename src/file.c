@@ -59,3 +59,35 @@ char **lines(const char *filename, int *num_lines_out) {
 
     return lines;
 }
+
+char **split(char *str, char *delim) {
+    char **result = NULL;
+    size_t count = 0;
+    char *token = strtok(str, delim);
+
+    while (token) {
+        char **temp = realloc(result, (count + 1) * sizeof(char *));
+        if (temp == NULL) {
+            perror("Memory allocation error");
+            break;
+        }
+        result = temp;
+
+        result[count] = token;
+        count++;
+
+        token = strtok(NULL, delim);
+    }
+
+    return result;
+}
+
+void removeChars(char *str, char c) {
+    int i, j = 0;
+    for (i = 0; str[i]; i++) {
+        if (str[i] != c) {
+            str[j++] = str[i];
+        }
+    }
+    str[j] = '\0';
+}

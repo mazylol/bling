@@ -6,28 +6,6 @@
 #include "colors.h"
 #include "file.h"
 
-char **split(char *str, char *delim) {
-    char **result = NULL;
-    size_t count = 0;
-    char *token = strtok(str, delim);
-
-    while (token) {
-        char **temp = realloc(result, (count + 1) * sizeof(char *));
-        if (temp == NULL) {
-            perror("Memory allocation error");
-            break;
-        }
-        result = temp;
-
-        result[count] = token;
-        count++;
-
-        token = strtok(NULL, delim);
-    }
-
-    return result;
-}
-
 struct os {
     char *name;
     char *version;
@@ -52,6 +30,18 @@ struct os parse_os(char **fileLines, int num_lines) {
         }
     }
 
+    if (os.name != NULL) {
+        removeChars(os.name, '"');
+    }
+
+    if (os.version != NULL) {
+        removeChars(os.version, '"');
+    }
+
+    if (os.build_id != NULL) {
+        removeChars(os.build_id, '"');
+    }
+
     return os;
 }
 
@@ -60,22 +50,12 @@ struct mem {
     double used_memory;
 };
 
-void removeSpaces(char *str) {
-    int i, j = 0;
-    for (i = 0; str[i]; i++) {
-        if (str[i] != ' ') {
-            str[j++] = str[i];
-        }
-    }
-    str[j] = '\0';
-}
-
 struct mem parse_meminfo(char **fileLines, int num_lines) {
     struct mem mem = {0, 0};
 
     for (int i = 0; i < num_lines; i++) {
         char *line = fileLines[i];
-        removeSpaces(line);
+        removeChars(line, ' ');
 
         if (strncmp(line, "MemTotal:", 9) == 0) {
             char *total_memory = strstr(line, ":") + 1;
@@ -140,7 +120,6 @@ int main() {
         printf(" (%s)", os.build_id);
     }
     printf("\n");
-
 
     printf("%skernel%s    %s\n", BHYEL, CRESET, kernel);
     printf("%sshell%s     %s\n", BHMAG, CRESET, shell);
