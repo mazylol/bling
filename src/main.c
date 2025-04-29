@@ -771,6 +771,7 @@ int main(int argc, char **argv) {
             return 0;
         } else if (strcmp(argv[1], "--license") == 0) {
             printf("%s", LICENSE);
+            return 0;
         } else if (strstr(argv[1], "--") != NULL) {
             printf("%s", helpString);
             return 0;
