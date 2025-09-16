@@ -753,13 +753,34 @@ struct mem parse_meminfo(char **fileLines, int num_lines) {
     return mem;
 }
 
-size_t parse_uptime(char *uptime) {
-    size_t minutes = 0;
+struct uptime {
+    size_t seconds;
+    size_t minutes;
+    size_t hours;
+    size_t days;
+};
 
-    size_t seconds = strtoull(strtok(uptime, " "), NULL, 10);
-    minutes = seconds / 60;
+struct uptime parse_uptime(char *uptime) {
+    struct uptime up = {};
 
-    return minutes;
+    up.seconds = strtoull(strtok(uptime, " "), NULL, 10);
+    up.minutes = up.seconds / 60;
+    up.hours = up.minutes / 60;
+    up.days = up.hours / 24;
+
+    if (up.days > 0) {
+        up.hours -= up.days*24;
+    }
+
+    if (up.minutes > 0) {
+        up.seconds -= up.minutes*60;
+    }
+
+    if (up.hours > 0) {
+        up.minutes -= up.hours*60;
+    }
+
+    return up;
 }
 
 const char *helpString = "bling, a very simple system info tool, kind of like neofetch but worse\n\n--help: this screen\n--license: view the license\n";
@@ -814,10 +835,12 @@ int main(int argc, char **argv) {
     }
     printf("\n");
 
+    struct uptime uptime = parse_uptime(lines("/proc/uptime", &num_lines)[0]);
+
     printf("%skernel%s    %s\n", BHYEL, CRESET, kernel);
     printf("%sshell%s     %s\n", BHMAG, CRESET, shell);
     printf("%sram%s       %.1f / %.1f GiB\n", BHBLU, CRESET, mem.used_memory, mem.max_memory);
-    printf("%suptime%s    %lu minutes\n", BHBLK, CRESET, parse_uptime(lines("/proc/uptime", &num_lines)[0]));
+    printf("%suptime%s    %lud %luh %lum %lus\n", BHBLK, CRESET, uptime.days, uptime.hours, uptime.minutes, uptime.seconds);
     printf("%sdisk%s      %.1lu / %.1lu GiB\n", BHRED, CRESET, used_memory_gb, total_memory_gb);
 
     return 0;
