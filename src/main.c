@@ -5,9 +5,9 @@
 #include <string.h>
 #include <sys/statvfs.h>
 
+#include "LICENSE.h"
 #include "colors.h"
 #include "file.h"
-#include "LICENSE.h"
 
 struct os {
     char *name;
@@ -88,22 +88,12 @@ struct uptime {
 struct uptime parse_uptime(char *uptime) {
     struct uptime up = {};
 
-    up.seconds = strtoull(strtok(uptime, " "), NULL, 10);
-    up.minutes = up.seconds / 60;
-    up.hours = up.minutes / 60;
-    up.days = up.hours / 24;
+    unsigned long long total_seconds = strtoull(strtok(uptime, " "), NULL, 10);
 
-    if (up.days > 0) {
-        up.hours -= up.days*24;
-    }
-
-    if (up.minutes > 0) {
-        up.seconds -= up.minutes*60;
-    }
-
-    if (up.hours > 0) {
-        up.minutes -= up.hours*60;
-    }
+    up.days = total_seconds / 86400;
+    up.hours = (total_seconds % 86400) / 3600;
+    up.minutes = (total_seconds % 3600) / 60;
+    up.seconds = total_seconds % 60;
 
     return up;
 }
