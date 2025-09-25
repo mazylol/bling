@@ -98,6 +98,25 @@ struct uptime parse_uptime(char *uptime) {
     return up;
 }
 
+struct disk {
+    unsigned long total_memory_gb;
+    unsigned long used_memory_gb;
+};
+
+struct disk get_diskinfo() {
+    struct disk d = {};
+
+    d.total_memory_gb = 0;
+    d.used_memory_gb = 0;
+    struct statvfs disk_info;
+    if (statvfs("/", &disk_info) == 0) {
+        d.total_memory_gb = disk_info.f_blocks * disk_info.f_frsize / 1024 / 1024 / 1024;
+        d.used_memory_gb = (disk_info.f_blocks - disk_info.f_bfree) * disk_info.f_frsize / 1024 / 1024 / 1024;
+    }
+
+    return d;
+}
+
 const char *helpString = "bling, a very simple system info tool, kind of like neofetch but worse\n\n--help: this screen\n--license: view the license\n";
 
 int main(int argc, char **argv) {
@@ -122,22 +141,18 @@ int main(int argc, char **argv) {
     char **fileLines = lines("/etc/os-release", &num_lines);
     struct os os = parse_os(fileLines, num_lines);
 
-    char *proc_version = lines("/proc/version", &num_lines)[0];
-
-    char *kernel = split(proc_version, " ")[2];
+    char *kernel = split(lines("/proc/version", &num_lines)[0], " ")[2];
 
     char *shell = strrchr(getenv("SHELL"), '/') + 1;
 
     fileLines = lines("/proc/meminfo", &num_lines);
     struct mem mem = parse_meminfo(fileLines, num_lines);
 
-    unsigned long total_memory_gb = 0;
-    unsigned long used_memory_gb = 0;
-    struct statvfs disk_info;
-    if (statvfs("/", &disk_info) == 0) {
-        total_memory_gb = disk_info.f_blocks * disk_info.f_frsize / 1024 / 1024 / 1024;
-        used_memory_gb = (disk_info.f_blocks - disk_info.f_bfree) * disk_info.f_frsize / 1024 / 1024 / 1024;
-    }
+    struct disk diskInfo = get_diskinfo();
+
+    char buffer[200];
+
+    snprintf(buffer, 200, "%suser/host%s %s@%s\n", BHGRN, CRESET, username, hostname);
 
     printf("%suser/host%s %s@%s\n", BHGRN, CRESET, username, hostname);
 
@@ -156,7 +171,7 @@ int main(int argc, char **argv) {
     printf("%sshell%s     %s\n", BHMAG, CRESET, shell);
     printf("%sram%s       %.1f / %.1f GiB\n", BHBLU, CRESET, mem.used_memory, mem.max_memory);
     printf("%suptime%s    %lud %luh %lum %lus\n", BHBLK, CRESET, uptime.days, uptime.hours, uptime.minutes, uptime.seconds);
-    printf("%sdisk%s      %.1lu / %.1lu GiB\n", BHRED, CRESET, used_memory_gb, total_memory_gb);
+    printf("%sdisk%s      %.1lu / %.1lu GiB\n", BHRED, CRESET, diskInfo.used_memory_gb, diskInfo.total_memory_gb);
 
     return 0;
 }
