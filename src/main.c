@@ -226,8 +226,16 @@ int main(int argc, char **argv) {
 
     fileLines = lines("/proc/version", &num_lines);
     if (fileLines != NULL && num_lines > 0) {
-        char *kernel_string = split(fileLines[0], " ")[2];
-        bling.kernel = strdup(kernel_string);
+        char **kernel_parts = split(fileLines[0], " ");
+
+        if (kernel_parts != NULL && kernel_parts[0] != NULL && kernel_parts[1] != NULL && kernel_parts[2] != NULL) {
+            bling.kernel = strdup(kernel_parts[2]);
+        } else {
+            bling.kernel = strdup("unknown");
+        }
+
+        free_string_array(kernel_parts);
+
         free_string_array(fileLines);
         fileLines = NULL;
     } else {
