@@ -1,15 +1,10 @@
 # Bling
 Minimal system info fetcher made in C
 
-![image](https://github.com/user-attachments/assets/74aabec7-0664-4c13-95ef-133d755816c1)
+<img width="296" height="139" alt="image" src="https://github.com/user-attachments/assets/d50b1510-f780-454a-a1d8-b69ddb39a9c6" />
 
 ## Install
 1. `git clone https://github.com/mazylol/bling`
 2. `cd bling`
-3. `meson setup buildDir && cd buildDir`
-4. `sudo ninja install`
-
-## Run
-`bling`
-
-Personally, I put it in my .bashrc so I get it on terminal start
+3. `clang nob.c -o nob`
+4. `sudo ./nob install`
