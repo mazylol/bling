@@ -8,24 +8,58 @@
 #define BINARY_NAME "bling"
 #define INSTALL_PATH "/usr/local/bin/" BINARY_NAME
 
-int command_exists(const char *cmd) {
-    char shell_cmd[256];
-    snprintf(shell_cmd, sizeof(shell_cmd), "command -v %s >/dev/null 2>&1", cmd);
+int create_database(const char *sources[], size_t sources_count,
+                    const char *cflags[], size_t cflags_count,
+                    const char *cc) {
 
-    int status = system(shell_cmd);
+    Nob_String_Builder sb = {0};
+    nob_sb_append_cstr(&sb, "[\n");
 
-    if (status == -1) {
-        perror("system error");
-        return 0;
-    } else {
-        int exit_status = WEXITSTATUS(status);
+    char *cwd = getcwd(NULL, 0);
+    if (!cwd)
+        return 1;
 
-        if (exit_status == 0) {
-            return 1;
-        } else {
-            return 0;
+    for (size_t i = 0; i < sources_count; ++i) {
+        const char *src = sources[i];
+        char *abs_src = realpath(src, NULL);
+
+        nob_sb_append_cstr(&sb, "  {\n");
+        nob_sb_append_cstr(&sb, "    \"directory\": \"");
+        nob_sb_append_cstr(&sb, cwd);
+        nob_sb_append_cstr(&sb, "\",\n");
+
+        nob_sb_append_cstr(&sb, "    \"file\": \"");
+        nob_sb_append_cstr(&sb, abs_src ? abs_src : src);
+        nob_sb_append_cstr(&sb, "\",\n");
+
+        nob_sb_append_cstr(&sb, "    \"arguments\": [\"");
+        nob_sb_append_cstr(&sb, cc);
+        nob_sb_append_cstr(&sb, "\", \"-c\", \"");
+        nob_sb_append_cstr(&sb, src);
+        nob_sb_append_cstr(&sb, "\"");
+
+        for (size_t j = 0; j < cflags_count; ++j) {
+            nob_sb_append_cstr(&sb, ", \"");
+            nob_sb_append_cstr(&sb, cflags[j]);
+            nob_sb_append_cstr(&sb, "\"");
         }
+
+        nob_sb_append_cstr(&sb, "]\n");
+
+        if (i < sources_count - 1) {
+            nob_sb_append_cstr(&sb, "  },\n");
+        } else {
+            nob_sb_append_cstr(&sb, "  }\n");
+        }
+        free(abs_src);
     }
+    nob_sb_append_cstr(&sb, "]\n");
+
+    nob_write_entire_file(BUILD_FOLDER "compile_commands.json", sb.items, sb.count);
+    nob_sb_free(sb);
+    free(cwd);
+
+    return 0;
 }
 
 int main(int argc, char **argv) {
@@ -47,6 +81,10 @@ int main(int argc, char **argv) {
     Nob_Cmd cmd = {0};
     Nob_File_Paths object_files = {0};
     Nob_Procs procs = {0};
+
+    if (create_database(sources, NOB_ARRAY_LEN(sources), cflags, NOB_ARRAY_LEN(cflags), cc) != 0) {
+        return 1;
+    }
 
     // Compile source files to objects
     for (size_t i = 0; i < NOB_ARRAY_LEN(sources); ++i) {
@@ -80,11 +118,6 @@ int main(int argc, char **argv) {
     // Check if the binary needs relinking (if binary is missing OR any object file is newer)
     if (nob_needs_rebuild(binary_path, object_files.items, object_files.count)) {
         cmd.count = 0;
-
-        // If bear exists, use it to generate compile_commands.json
-        if (command_exists("bear")) {
-            nob_cmd_append(&cmd, "bear", "--output", BUILD_FOLDER "compile_commands.json", "--");
-        }
 
         nob_cmd_append(&cmd, cc);
         nob_cmd_append(&cmd, "-o", binary_path);
