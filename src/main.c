@@ -167,6 +167,8 @@ struct bling {
     struct os os;
     char *kernel;
     char *shell;
+    char *cpu;
+    int cores;
 
     struct mem mem;
     struct uptime uptime;
@@ -266,6 +268,27 @@ int main(int argc, char **argv) {
     free_string_array(fileLines);
     fileLines = NULL;
 
+    int first_iter = 1;
+    bling.cores = 0;
+
+    fileLines = lines("/proc/cpuinfo", &num_lines);
+
+    for (int i = 0; i < num_lines; i++) {
+        if (strncmp(fileLines[i], "model name", 10) == 0) {
+            bling.cores++;
+
+            if (first_iter) {
+                char *colon = strchr(fileLines[i], ':');
+                if (colon) {
+                    bling.cpu = colon + 2;
+                }
+                first_iter = 0;
+            }
+        }
+    }
+
+    fileLines = NULL;
+
     char user_host_buffer[BUFFER_SIZE];
     snprintf(user_host_buffer, BUFFER_SIZE, "%suser/host%s %s@%s", BHGRN, CRESET, bling.username, bling.hostname);
 
@@ -284,6 +307,7 @@ int main(int argc, char **argv) {
     printf("%s\n", os_buffer);
     printf("%skernel%s    %s\n", BHYEL, CRESET, bling.kernel);
     printf("%sshell%s     %s\n", BHMAG, CRESET, bling.shell);
+    printf("%scpu%s       %s (%d)\n", BHWHT, CRESET, bling.cpu, bling.cores);
     printf("%sram%s       %.1f / %.1f GiB\n", BHBLU, CRESET, bling.mem.used_memory, bling.mem.max_memory);
     printf("%suptime%s    %zud %zuh %zum %zus\n", BHBLK, CRESET, bling.uptime.days, bling.uptime.hours, bling.uptime.minutes, bling.uptime.seconds); // %zu for size_t
     printf("%sdisk%s      %.1f / %.1f GiB\n", BHRED, CRESET, bling.disk.used_memory_gb, bling.disk.total_memory_gb);
