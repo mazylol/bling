@@ -1,7 +1,8 @@
 # Bling
 Minimal system info fetcher made in C
 
-<img width="296" height="139" alt="image" src="https://github.com/user-attachments/assets/d50b1510-f780-454a-a1d8-b69ddb39a9c6" />
+<img width="506" height="161" alt="image" src="https://github.com/user-attachments/assets/28125438-eea6-49aa-bf0d-18d6d63a4f58" />
+
 
 ## Install
 1. `git clone https://github.com/mazylol/bling`
