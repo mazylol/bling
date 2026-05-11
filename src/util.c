@@ -2,7 +2,7 @@
 
 #include "util.h"
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 
 char *strdup(const char *src) {
