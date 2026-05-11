@@ -5,6 +5,7 @@
 #include "util.h"
 
 #include <ctype.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -141,6 +142,42 @@ struct disk get_diskinfo() {
     return d;
 }
 
+static int _read_first_frequency_khz(const char *path_khz) {
+    int num_lines = 0;
+    char **file_lines = lines(path_khz, &num_lines);
+    if (file_lines == NULL || num_lines == 0 || file_lines[0] == NULL) {
+        free_string_array(file_lines);
+        return 0;
+    }
+
+    char *line = file_lines[0];
+    char *end_ptr = NULL;
+    long value_khz = strtol(line, &end_ptr, 10);
+    free_string_array(file_lines);
+
+    if (end_ptr == line || value_khz <= 0 || value_khz > INT_MAX) {
+        return 0;
+    }
+
+    return (int)value_khz;
+}
+
+static int _read_max_frequency_khz_for_cores(int cores, const char *path_fmt) {
+    int max_khz = 0;
+
+    for (int i = 0; i < cores; i++) {
+        char path[128];
+        snprintf(path, sizeof(path), path_fmt, i);
+
+        int value_khz = _read_first_frequency_khz(path);
+        if (value_khz > max_khz) {
+            max_khz = value_khz;
+        }
+    }
+
+    return max_khz;
+}
+
 struct cpu get_cpu() {
     int num_lines = 0;
     char **fileLines = lines("/proc/cpuinfo", &num_lines);
@@ -148,7 +185,11 @@ struct cpu get_cpu() {
     struct cpu cpu = {
         .name = NULL,
         .cores = 0,
+        .base_frequency = 0,
     };
+
+    double cpuinfo_mhz_sum = 0.0;
+    int cpuinfo_mhz_count = 0;
 
     int first_iter = 1;
     for (int i = 0; i < num_lines; i++) {
@@ -163,9 +204,38 @@ struct cpu get_cpu() {
                 first_iter = 0;
             }
         }
+
+        if (strncmp(fileLines[i], "cpu MHz", 7) == 0) {
+            char *colon = strchr(fileLines[i], ':');
+            if (colon) {
+                char *end_ptr = NULL;
+                double mhz = strtod(colon + 1, &end_ptr);
+                if (end_ptr != colon + 1 && mhz > 0) {
+                    cpuinfo_mhz_sum += mhz;
+                    cpuinfo_mhz_count++;
+                }
+            }
+        }
     }
 
     free_string_array(fileLines);
+
+    int cpu_max_frequency =
+            _read_max_frequency_khz_for_cores(cpu.cores, "/sys/devices/system/cpu/cpu%d/cpufreq/cpuinfo_max_freq");
+    int cpu_base_frequency =
+            _read_max_frequency_khz_for_cores(cpu.cores, "/sys/devices/system/cpu/cpu%d/cpufreq/base_frequency");
+
+    if (cpu_max_frequency > 0) {
+        cpu.base_frequency = cpu_max_frequency;
+    } else if (cpu_base_frequency > 0) {
+        cpu.base_frequency = cpu_base_frequency;
+    }
+
+    if (cpu.base_frequency == 0) {
+        if (cpuinfo_mhz_count > 0) {
+            cpu.base_frequency = (int)((cpuinfo_mhz_sum / cpuinfo_mhz_count) * 1000);
+        }
+    }
 
     return cpu;
 }

@@ -99,7 +99,8 @@ int main(int argc, char **argv) {
     printf("%s\n", os_buffer);
     printf("%skernel%s    %s\n", BHYEL, CRESET, bling.kernel);
     printf("%sshell%s     %s\n", BHMAG, CRESET, bling.shell);
-    printf("%scpu%s       %s (%d)\n", BHWHT, CRESET, bling.cpu.name, bling.cpu.cores);
+    printf("%scpu%s       %s (%d) @ %.2f GHz\n", BHWHT, CRESET, bling.cpu.name, bling.cpu.cores,
+           (float)bling.cpu.base_frequency / 1000 / 1000);
     printf("%sram%s       %.1f / %.1f GiB\n", BHBLU, CRESET, bling.mem.used_memory, bling.mem.max_memory);
     printf("%suptime%s    %zud %zuh %zum %zus\n", BHBLK, CRESET, bling.uptime.days, bling.uptime.hours, bling.uptime.minutes,
            bling.uptime.seconds); // %zu for size_t

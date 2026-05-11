@@ -55,6 +55,7 @@ struct disk get_diskinfo();
 struct cpu {
     char *name;
     int cores;
+    int base_frequency; // kHz (max frequency)
 };
 
 struct cpu get_cpu();
