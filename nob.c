@@ -8,11 +8,9 @@
 #define BINARY_NAME "bling"
 #define INSTALL_PATH "/usr/local/bin/" BINARY_NAME
 
-int create_database(const char *sources[], size_t sources_count,
-                    const char *cflags[], size_t cflags_count,
-                    const char *cc) {
+int create_database(const char *sources[], size_t sources_count, const char *cflags[], size_t cflags_count, const char *cc) {
 
-    Nob_String_Builder sb = {0};
+    Nob_String_Builder sb = { 0 };
     nob_sb_append_cstr(&sb, "[\n");
 
     char *cwd = getcwd(NULL, 0);
@@ -67,20 +65,18 @@ int main(int argc, char **argv) {
 
     // Configuration
     const char *cc = "clang";
-    const char *cflags[] = {"-Wall", "-Wextra", "-g", "-std=c99"}; // Add common flags here
+    const char *cflags[] = { "-Wall", "-Wextra", "-g", "-std=c99" }; // Add common flags here
     const char *libs[] = {};
 
     // Sources
-    const char *sources[] = {
-        SRC_FOLDER "main.c",
-        SRC_FOLDER "file.c"};
+    const char *sources[] = { SRC_FOLDER "main.c", SRC_FOLDER "file.c" };
 
     if (!nob_mkdir_if_not_exists(BUILD_FOLDER))
         return 1;
 
-    Nob_Cmd cmd = {0};
-    Nob_File_Paths object_files = {0};
-    Nob_Procs procs = {0};
+    Nob_Cmd cmd = { 0 };
+    Nob_File_Paths object_files = { 0 };
+    Nob_Procs procs = { 0 };
 
     if (create_database(sources, NOB_ARRAY_LEN(sources), cflags, NOB_ARRAY_LEN(cflags), cc) != 0) {
         return 1;

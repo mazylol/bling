@@ -29,10 +29,11 @@ struct os {
  * The caller is responsible for freeing os.name, os.version, and os.build_id.
  */
 struct os parse_os(char **fileLines, int num_lines) {
-    struct os os;
-    os.name = NULL;
-    os.version = NULL;
-    os.build_id = NULL;
+    struct os os = {
+        .name = NULL,
+        .version = NULL,
+        .build_id = NULL,
+    };
 
     char *name_ptr = NULL;
     char *version_ptr = NULL;
@@ -80,7 +81,10 @@ struct mem {
  * This version is more robust and doesn't modify the input lines.
  */
 struct mem parse_meminfo(char **fileLines, int num_lines) {
-    struct mem mem = {0.0, 0.0};
+    struct mem mem = {
+        .max_memory = 0.0,
+        .used_memory = 0.0,
+    };
     double total_mem_kb = 0.0;
     double avail_mem_kb = 0.0;
 
@@ -118,7 +122,7 @@ struct uptime {
 };
 
 struct uptime parse_uptime(char *uptime_line) {
-    struct uptime up = {0, 0, 0, 0};
+    struct uptime up = { 0, 0, 0, 0 };
     if (uptime_line == NULL) {
         return up;
     }
@@ -145,7 +149,10 @@ struct disk {
  * Corrected to use double for GiB calculations.
  */
 struct disk get_diskinfo() {
-    struct disk d = {0.0, 0.0};
+    struct disk d = {
+        .total_memory_gb = 0.0,
+        .used_memory_gb = 0.0,
+    };
     struct statvfs disk_info;
 
     if (statvfs("/", &disk_info) == 0) {
@@ -188,7 +195,8 @@ void free_bling(struct bling *b) {
 }
 
 int main(int argc, char **argv) {
-    const char *helpString = "bling, a very simple system info tool, kind of like neofetch but worse\n\n--help: this screen\n--license: view the license\n";
+    const char *helpString = "bling, a very simple system info tool, kind of like neofetch but "
+                             "worse\n\n--help: this screen\n--license: view the license\n";
 
     if (argc != 1) {
         if (strcmp(argv[1], "--help") == 0) {
@@ -203,7 +211,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    struct bling bling = {0};
+    struct bling bling = { 0 };
     int num_lines = 0;
     char **fileLines = NULL;
 
@@ -294,7 +302,8 @@ int main(int argc, char **argv) {
 
     char os_buffer[BUFFER_SIZE];
     if (bling.os.name != NULL && bling.os.version != NULL && bling.os.build_id != NULL) {
-        snprintf(os_buffer, BUFFER_SIZE, "%sos%s        %s %s (%s)", BHCYN, CRESET, bling.os.name, bling.os.version, bling.os.build_id);
+        snprintf(os_buffer, BUFFER_SIZE, "%sos%s        %s %s (%s)", BHCYN, CRESET, bling.os.name, bling.os.version,
+                 bling.os.build_id);
     } else if (bling.os.name != NULL && bling.os.version != NULL) {
         snprintf(os_buffer, BUFFER_SIZE, "%sos%s        %s %s", BHCYN, CRESET, bling.os.name, bling.os.version);
     } else if (bling.os.name != NULL) {
@@ -309,7 +318,8 @@ int main(int argc, char **argv) {
     printf("%sshell%s     %s\n", BHMAG, CRESET, bling.shell);
     printf("%scpu%s       %s (%d)\n", BHWHT, CRESET, bling.cpu, bling.cores);
     printf("%sram%s       %.1f / %.1f GiB\n", BHBLU, CRESET, bling.mem.used_memory, bling.mem.max_memory);
-    printf("%suptime%s    %zud %zuh %zum %zus\n", BHBLK, CRESET, bling.uptime.days, bling.uptime.hours, bling.uptime.minutes, bling.uptime.seconds); // %zu for size_t
+    printf("%suptime%s    %zud %zuh %zum %zus\n", BHBLK, CRESET, bling.uptime.days, bling.uptime.hours, bling.uptime.minutes,
+           bling.uptime.seconds); // %zu for size_t
     printf("%sdisk%s      %.1f / %.1f GiB\n", BHRED, CRESET, bling.disk.used_memory_gb, bling.disk.total_memory_gb);
 
     free_bling(&bling);
