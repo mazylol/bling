@@ -143,17 +143,20 @@ struct disk get_diskinfo() {
 }
 
 static int _read_first_frequency_khz(const char *path_khz) {
-    int num_lines = 0;
-    char **file_lines = lines(path_khz, &num_lines);
-    if (file_lines == NULL || num_lines == 0 || file_lines[0] == NULL) {
-        free_string_array(file_lines);
+    FILE *file = fopen(path_khz, "r");
+    if (file == NULL) {
         return 0;
     }
 
-    char *line = file_lines[0];
+    char line[64];
+    if (fgets(line, sizeof(line), file) == NULL) {
+        fclose(file);
+        return 0;
+    }
+    fclose(file);
+
     char *end_ptr = NULL;
     long value_khz = strtol(line, &end_ptr, 10);
-    free_string_array(file_lines);
 
     if (end_ptr == line || value_khz <= 0 || value_khz > INT_MAX) {
         return 0;
