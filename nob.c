@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
     const char *libs[] = {};
 
     // Sources
-    const char *sources[] = { SRC_FOLDER "main.c", SRC_FOLDER "file.c" };
+    const char *sources[] = { SRC_FOLDER "main.c", SRC_FOLDER "file.c", SRC_FOLDER "util.c", SRC_FOLDER "system.c" };
 
     if (!nob_mkdir_if_not_exists(BUILD_FOLDER))
         return 1;

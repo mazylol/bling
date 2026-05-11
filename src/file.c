@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "file.h"
+#include "util.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,14 +9,6 @@
 
 #define INITIAL_CAPACITY 8
 #define MAX_LINE_LENGTH 1024
-
-char *strdup(const char *src) {
-    char *dst = malloc(strlen(src) + 1);
-    if (dst == NULL)
-        return NULL;
-    strcpy(dst, src);
-    return dst;
-}
 
 char **lines(const char *filename, int *num_lines_out) {
     FILE *file = fopen(filename, "r");
@@ -149,14 +142,4 @@ void free_string_array(char **array) {
         free(array[i]); // Free each individual string
     }
     free(array); // Free the array of pointers
-}
-
-void removeChars(char *str, char c) {
-    int i, j = 0;
-    for (i = 0; str[i]; i++) {
-        if (str[i] != c) {
-            str[j++] = str[i];
-        }
-    }
-    str[j] = '\0';
 }
