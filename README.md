@@ -5,7 +5,7 @@ Minimal system info fetcher made in C
 
 
 ## Install
-1. `git clone https://github.com/mazylol/bling`
+1. `git clone https://codeberg.org/mazylol/bling`
 2. `cd bling`
 3. `clang nob.c -o nob`
 4. `sudo ./nob install`
