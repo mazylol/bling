@@ -1,4 +1,5 @@
 # Bling
+Moved to https://codeberg.org/mazylol/bling
 Minimal system info fetcher made in C
 
 <img width="506" height="161" alt="image" src="https://github.com/user-attachments/assets/28125438-eea6-49aa-bf0d-18d6d63a4f58" />
